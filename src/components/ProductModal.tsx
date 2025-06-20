@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Product } from '@/types/product';
 import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 
 interface ProductModalProps {
   product: Product;
@@ -13,8 +14,10 @@ interface ProductModalProps {
 const ProductModal = ({ product, onClose }: ProductModalProps) => {
   const [reviewsOpen, setReviewsOpen] = useState(true);
   const { user } = useAuth();
+  const { addToCart } = useCart();
 
   const handleAddToCart = () => {
+    addToCart(product);
     alert(`${product.title} added to cart!`);
     onClose();
   }
