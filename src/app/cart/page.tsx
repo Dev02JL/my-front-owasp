@@ -4,6 +4,8 @@ import { useCart } from '@/context/CartContext';
 import Image from 'next/image';
 import Link from 'next/link';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export default function CartPage() {
   const { cartItems, removeFromCart, validateCart, isLoading, error } = useCart();
 
@@ -30,33 +32,39 @@ export default function CartPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {cartItems.map(item => (
-              <div key={item.id} className="flex items-center justify-between bg-gray-800 p-4 rounded-lg shadow-md">
-                <div className="flex items-center space-x-4">
-                  <div className="relative w-20 h-20 flex-shrink-0">
-                    <Image
-                      src={item.image || 'https://placehold.co/100x100/2d3748/ffffff/png?text=Image'}
-                      alt={item.title}
-                      fill
-                      className="object-cover rounded-md"
-                    />
+            {cartItems.map(item => {
+              const imageUrl = item.image
+                ? `${API_BASE_URL}${item.image}`
+                : 'https://placehold.co/100x100/2d3748/ffffff/png?text=Image';
+
+              return (
+                <div key={item.id} className="flex items-center justify-between bg-gray-800 p-4 rounded-lg shadow-md">
+                  <div className="flex items-center space-x-4">
+                    <div className="relative w-20 h-20 flex-shrink-0">
+                      <Image
+                        src={imageUrl}
+                        alt={item.title}
+                        fill
+                        className="object-cover rounded-md"
+                      />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold">{item.title}</h2>
+                      <p className="text-gray-400">{item.price.toFixed(2)}€</p>
+                      <p className="text-sm text-gray-500">Quantité: {item.quantity}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-lg font-semibold">{item.title}</h2>
-                    <p className="text-gray-400">{item.price.toFixed(2)}€</p>
-                    <p className="text-sm text-gray-500">Quantité: {item.quantity}</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => removeFromCart(item.id)}
-                  className="text-red-500 hover:text-red-400"
-                >
+                  <button
+                    onClick={() => removeFromCart(item.id)}
+                    className="text-red-500 hover:text-red-400"
+                  >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                </button>
-              </div>
-            ))}
+                  </button>
+                </div>
+              );
+            })}
              <div className="mt-8 pt-6 border-t border-gray-700 flex justify-between items-center">
               <h2 className="text-2xl font-bold">Total: {totalPrice.toFixed(2)}€</h2>
               <button 

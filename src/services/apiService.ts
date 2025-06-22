@@ -84,9 +84,7 @@ export async function getCart(): Promise<CartItem[]> {
     // Transformer les données de l'API pour correspondre à notre type CartItem
     return data.products.map((p: any) => ({
         ...p,
-        id: p.id,
         title: p.name, // L'API retourne 'name', on le mappe vers 'title'
-        image: p.image ? `${API_BASE_URL}${p.image}` : null,
     }));
 }
 
