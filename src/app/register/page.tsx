@@ -2,12 +2,21 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { registerUser } from '@/services/apiService';
 
 export default function RegisterPage() {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [showPasswordAdvice, setShowPasswordAdvice] = useState(false);
   const [securityQuestion, setSecurityQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
+
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const passwordAdvice = useMemo(() => {
     const advice = [];
@@ -18,6 +27,30 @@ export default function RegisterPage() {
     if (!/[^A-Za-z0-9]/.test(password)) advice.push("Au moins un caractère spécial.");
     return advice;
   }, [password]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (password !== repeatPassword) {
+      setError("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await registerUser({ email, password });
+      setSuccess(`${response.message}. Vous allez être redirigé vers la page de connexion.`);
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000);
+    } catch (err: any) {
+      setError(err.message || 'Une erreur est survenue.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const securityQuestions = [
     "Quel est le nom de jeune fille de votre mère ?",
@@ -36,15 +69,18 @@ export default function RegisterPage() {
           </h2>
         </div>
 
-        <form className="space-y-6">
+        {error && <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-md text-center">{error}</div>}
+        {success && <div className="bg-green-500/20 border border-green-500 text-green-300 px-4 py-3 rounded-md text-center">{success}</div>}
+
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="sr-only">Email*</label>
-            <input id="email" name="email" type="email" required className="appearance-none rounded-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" placeholder="Email*" />
+            <input id="email" name="email" type="email" required className="appearance-none rounded-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" placeholder="Email*" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} />
           </div>
 
           <div>
             <label htmlFor="password" className="sr-only">Password*</label>
-            <input id="password" name="password" type="password" required minLength={5} maxLength={40} className="appearance-none rounded-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" placeholder="Password*" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input id="password" name="password" type="password" required minLength={5} maxLength={40} className="appearance-none rounded-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" placeholder="Password*" value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} />
             <div className="flex justify-between items-center text-xs text-gray-400 mt-1">
               <span>Password must be 5-40 characters long.</span>
               <span>{password.length}/40</span>
@@ -53,14 +89,14 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="repeat-password" className="sr-only">Repeat Password*</label>
-            <input id="repeat-password" name="repeat-password" type="password" required minLength={5} maxLength={40} className="appearance-none rounded-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" placeholder="Repeat Password*" value={repeatPassword} onChange={(e) => setRepeatPassword(e.target.value)} />
+            <input id="repeat-password" name="repeat-password" type="password" required minLength={5} maxLength={40} className="appearance-none rounded-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" placeholder="Repeat Password*" value={repeatPassword} onChange={(e) => setRepeatPassword(e.target.value)} disabled={loading} />
              <div className="flex justify-end items-center text-xs text-gray-400 mt-1">
               <span>{repeatPassword.length}/40</span>
             </div>
           </div>
 
           <div className="flex items-center">
-            <button type="button" onClick={() => setShowPasswordAdvice(!showPasswordAdvice)} className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none ${showPasswordAdvice ? 'bg-green-600' : 'bg-gray-600'}`}>
+            <button type="button" onClick={() => setShowPasswordAdvice(!showPasswordAdvice)} className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none ${showPasswordAdvice ? 'bg-green-600' : 'bg-gray-600'}`} disabled={loading}>
               <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200 ${showPasswordAdvice ? 'translate-x-5' : 'translate-x-0'}`} />
             </button>
             <span className="ml-3 text-sm font-medium">Show password advice</span>
@@ -78,7 +114,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="security-question" className="sr-only">Security Question*</label>
-            <select id="security-question" name="security-question" required value={securityQuestion} onChange={(e) => setSecurityQuestion(e.target.value)} className="appearance-none rounded-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+            <select id="security-question" name="security-question" required value={securityQuestion} onChange={(e) => setSecurityQuestion(e.target.value)} className="appearance-none rounded-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" disabled={loading}>
               <option value="" disabled>Security Question *</option>
               {securityQuestions.map(q => <option key={q} value={q}>{q}</option>)}
             </select>
@@ -89,12 +125,12 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="answer" className="sr-only">Answer*</label>
-            <input id="answer" name="answer" type="text" required className="appearance-none rounded-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" placeholder="Answer*" />
+            <input id="answer" name="answer" type="text" required className="appearance-none rounded-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" placeholder="Answer*" value={answer} onChange={(e) => setAnswer(e.target.value)} disabled={loading} />
           </div>
 
           <div>
-            <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-green-500">
-              Register
+            <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-green-500 disabled:opacity-50" disabled={loading}>
+              {loading ? 'Inscription...' : 'Register'}
             </button>
           </div>
         </form>

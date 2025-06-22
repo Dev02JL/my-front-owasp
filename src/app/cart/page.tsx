@@ -5,9 +5,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export default function CartPage() {
-  const { cartItems, removeFromCart, clearCart } = useCart();
+  const { cartItems, removeFromCart, validateCart, isLoading, error } = useCart();
 
   const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+
+  if (isLoading) {
+    return <div className="text-center text-white p-12">Chargement du panier...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500 p-12">Erreur: {error}</div>;
+  }
 
   return (
     <div className="bg-gray-900 text-white min-h-screen">
@@ -52,10 +60,10 @@ export default function CartPage() {
              <div className="mt-8 pt-6 border-t border-gray-700 flex justify-between items-center">
               <h2 className="text-2xl font-bold">Total: {totalPrice.toFixed(2)}€</h2>
               <button 
-                onClick={clearCart}
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md font-medium transition-colors duration-200"
+                onClick={validateCart}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-medium transition-colors duration-200"
               >
-                Vider le panier
+                Valider la commande
               </button>
             </div>
           </div>

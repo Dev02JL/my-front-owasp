@@ -6,7 +6,13 @@ interface ProductCardProps {
   onProductClick: (product: Product) => void;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const ProductCard = ({ product, onProductClick }: ProductCardProps) => {
+  const imageUrl = product.image 
+    ? `${API_BASE_URL}${product.image}`
+    : 'https://placehold.co/400x400/2d3748/ffffff/png?text=Image';
+
   return (
     <div 
       className="bg-gray-800 rounded-lg overflow-hidden shadow-lg relative group text-white cursor-pointer"
@@ -19,7 +25,7 @@ const ProductCard = ({ product, onProductClick }: ProductCardProps) => {
       )}
       <div className="relative w-full h-56">
         <Image 
-          src={product.image || 'https://placehold.co/400x400/2d3748/ffffff/png?text=Image'}
+          src={imageUrl}
           alt={product.title}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

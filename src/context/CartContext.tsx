@@ -1,7 +1,9 @@
 'use client';
 
-import { createContext, useState, useContext, ReactNode } from 'react';
+import { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Product } from '@/types/product';
+import { useAuth } from './AuthContext';
+import { getCart, addProductToCart, removeProductFromCart, validateCart as apiValidateCart } from '@/services/apiService';
 
 export interface CartItem extends Product {
   quantity: number;
@@ -9,38 +11,74 @@ export interface CartItem extends Product {
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: number) => void;
-  clearCart: () => void;
+  isLoading: boolean;
+  error: string | null;
+  addToCart: (product: Product) => Promise<void>;
+  removeFromCart: (productId: number) => Promise<void>;
+  validateCart: () => Promise<void>;
+  fetchCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
-  const addToCart = (product: Product) => {
-    setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === product.id);
-      if (existingItem) {
-        return prevItems.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      }
-      return [...prevItems, { ...product, quantity: 1 }];
-    });
+  const fetchCart = async () => {
+    if (!user) {
+      setCartItems([]);
+      setIsLoading(false);
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const items = await getCart();
+      setCartItems(items);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const removeFromCart = (productId: number) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
+  useEffect(() => {
+    fetchCart();
+  }, [user]);
+
+  const addToCart = async (product: Product) => {
+    try {
+      await addProductToCart(product.id);
+      await fetchCart(); // Re-fetch cart to get the updated state
+    } catch (err: any) {
+      setError(err.message);
+    }
   };
 
-  const clearCart = () => {
-    setCartItems([]);
+  const removeFromCart = async (productId: number) => {
+    try {
+      await removeProductFromCart(productId);
+      await fetchCart();
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const validateCart = async () => {
+    try {
+      await apiValidateCart();
+      await fetchCart();
+      alert('Commande validée avec succès!');
+    } catch (err: any) {
+      setError(err.message);
+      alert(`Erreur lors de la validation: ${err.message}`);
+    }
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider value={{ cartItems, isLoading, error, addToCart, removeFromCart, validateCart, fetchCart }}>
       {children}
     </CartContext.Provider>
   );
