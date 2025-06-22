@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_API_BASE_URL: 'http://localhost:8000',
+    NEXT_PUBLIC_API_URL: 'http://localhost:8000/api',
+  },
   images: {
     remotePatterns: [
       {
@@ -10,6 +14,7 @@ const nextConfig: NextConfig = {
       {
         protocol: 'http',
         hostname: 'localhost',
+        port: '8000',
       },
     ],
   },

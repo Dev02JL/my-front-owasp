@@ -1,6 +1,8 @@
 export interface Review {
   id: number;
-  user: string;
+  user: {
+    email: string;
+  };
   comment: string;
 }
 

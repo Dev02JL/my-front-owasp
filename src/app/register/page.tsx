@@ -10,8 +10,6 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [showPasswordAdvice, setShowPasswordAdvice] = useState(false);
-  const [securityQuestion, setSecurityQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -51,14 +49,6 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
-
-  const securityQuestions = [
-    "Quel est le nom de jeune fille de votre mère ?",
-    "Quel était le nom de votre premier animal de compagnie ?",
-    "Dans quelle ville êtes-vous né ?",
-    "Quel est le modèle de votre première voiture ?",
-    "Quel est votre plat préféré ?",
-  ];
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-800 text-white py-12 px-4 sm:px-6 lg:px-8">
@@ -111,22 +101,6 @@ export default function RegisterPage() {
               </ul>
             </div>
           )}
-
-          <div>
-            <label htmlFor="security-question" className="sr-only">Security Question*</label>
-            <select id="security-question" name="security-question" required value={securityQuestion} onChange={(e) => setSecurityQuestion(e.target.value)} className="appearance-none rounded-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" disabled={loading}>
-              <option value="" disabled>Security Question *</option>
-              {securityQuestions.map(q => <option key={q} value={q}>{q}</option>)}
-            </select>
-            <div className="text-xs text-gray-400 mt-1">
-              <span>This cannot be changed later!</span>
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="answer" className="sr-only">Answer*</label>
-            <input id="answer" name="answer" type="text" required className="appearance-none rounded-md relative block w-full px-3 py-3 bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" placeholder="Answer*" value={answer} onChange={(e) => setAnswer(e.target.value)} disabled={loading} />
-          </div>
 
           <div>
             <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-green-500 disabled:opacity-50" disabled={loading}>
